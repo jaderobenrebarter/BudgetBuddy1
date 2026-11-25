@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#4b2e9b" />
+  <title>BudgetBuddy – Money made simple</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+/* BudgetBuddy – violet & coral palette */
+:root {
+  --bg: #f5f3fb;
+  --surface: #ffffff;
+  --ink: #1b1633;
+  --muted: #6b6585;
+  --line: #e6e1f3;
+  --primary: #4b2e9b;
+  --primary-dark: #3a2380;
+  --soft: #ece6fa;
+  --accent: #ff7a59;
+  --accent-soft: #ffe9e2;
+  --good: #12a594;
+  --c1: #4b2e9b; --c2: #ff9f1c; --c3: #12b5a6; --c4: #e0457b; --c5: #5b8def;
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(27,22,51,.05), 0 8px 24px -12px rgba(75,46,155,.18);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; cursor: pointer; }
+input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+a.btn, a.link { text-decoration: none; }
+.hint { font-size: 12.5px; color: var(--muted); margin: -6px 0 14px; display: flex; gap: 12px; flex-wrap: wrap; }
+.hint span::before { content: '○ '; }
+.hint span.ok { color: var(--good); font-weight: 600; }
+.hint span.ok::before { content: '✓ '; }
+.row-between { display: flex; justify-content: flex-end; margin: -8px 0 14px; }
+.btn[disabled] { opacity: .7; cursor: progress; }
+.control.bad { border-color: #e2552f; background: #fff7f4; }
+a.link:hover { text-decoration: underline; }
+/* ---------- Auth ---------- */
+.auth { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; }
+.auth-hero { background: linear-gradient(160deg, #2a1768 0%, #4b2e9b 60%, #6a49c8 100%); color: #fff; padding: 56px 64px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.auth-hero::after { content: ""; position: absolute; right: -120px; bottom: -120px; width: 380px; height: 380px; border-radius: 50%; background: var(--accent); opacity: .9; }
+.auth-hero::before { content: ""; position: absolute; right: 90px; bottom: 150px; width: 120px; height: 120px; border-radius: 50%; background: #ffd166; opacity: .95; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark { width: 48px; height: 48px; border-radius: 14px; background: var(--accent); display: grid; place-items: center; color: #fff; box-shadow: 0 8px 20px -8px rgba(255,122,89,.8); }
+.brand b { font-size: 22px; letter-spacing: -.02em; display: block; line-height: 1.1; }
+.brand small { opacity: .75; font-size: 13px; }
+.auth-hero h1 { font-size: clamp(40px, 5vw, 68px); line-height: 1; letter-spacing: -.04em; font-weight: 800; position: relative; z-index: 1; }
+.auth-hero h1 span { color: #ffd166; display: block; }
+.auth-hero p { margin-top: 20px; max-width: 420px; opacity: .85; font-size: 17px; position: relative; z-index: 1; }
+.chips { display: flex; gap: 10px; margin-top: 28px; position: relative; z-index: 1; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: rgba(255,255,255,.14); font-weight: 600; font-size: 14px; }
+.auth-panel { display: grid; place-items: center; padding: 40px 24px; background: var(--surface); }
+.auth-card { width: 100%; max-width: 420px; }
+.auth-card h2 { font-size: 34px; letter-spacing: -.03em; font-weight: 800; }
+.auth-card > p { color: var(--muted); margin: 6px 0 26px; }
+.tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+.tab { background: none; border: 0; padding: 10px 6px; margin-right: 18px; font-weight: 700; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tab[aria-selected="true"] { color: var(--ink); border-color: var(--primary); }
+
+/* ---------- Forms ---------- */
+.field { display: block; margin-bottom: 16px; }
+.field > span { display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+.control { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 0 14px; height: 50px; color: var(--muted); transition: border-color .15s, background .15s; }
+.control:focus-within { border-color: var(--primary); background: #fff; }
+.control input, .control select { flex: 1; min-width: 0; border: 0; background: transparent; outline: 0; height: 100%; color: var(--ink); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; padding: 0 20px; height: 48px; font-weight: 700; background: var(--primary); color: #fff; transition: background .15s, transform .1s; }
+.btn:hover { background: var(--primary-dark); }
+.btn:active { transform: translateY(1px); }
+.btn.block { width: 100%; }
+.btn.ghost { background: var(--soft); color: var(--primary); }
+.btn.ghost:hover { background: #e1d8f7; }
+.btn.danger { background: var(--accent-soft); color: #c2410c; }
+.btn.sm { height: 36px; padding: 0 14px; font-size: 13px; border-radius: 10px; }
+.note { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--soft); color: var(--primary); font-size: 13px; text-align: center; }
+.error { color: #c2410c; font-size: 13px; margin: -6px 0 12px; min-height: 0; }
+.link { background: none; border: 0; color: var(--primary); font-weight: 700; padding: 0; }
+
+/* ---------- Shell ---------- */
+.shell { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+.side { background: var(--surface); border-right: 1px solid var(--line); padding: 24px 16px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+.side .brand { padding: 0 8px 28px; }
+.side .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
+.side .brand b { font-size: 18px; color: var(--ink); }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav a { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; color: var(--muted); text-decoration: none; font-weight: 600; }
+.nav a:hover { background: var(--bg); color: var(--ink); }
+.nav a[aria-current="page"] { background: var(--soft); color: var(--primary); }
+.side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+.tip { background: var(--accent-soft); border-radius: 14px; padding: 14px; font-size: 13px; color: #8a3a22; }
+.tip b { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; color: #c2410c; }
+.logout { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border: 0; background: none; color: var(--muted); font-weight: 600; border-radius: 12px; text-align: left; }
+.logout:hover { background: var(--bg); color: var(--ink); }
+.main { min-width: 0; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.topbar small { color: var(--muted); display: block; }
+.topbar b { font-size: 17px; }
+.me { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border: 1px solid var(--line); border-radius: 999px; font-weight: 600; font-size: 14px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+.avatar.lg { width: 64px; height: 64px; font-size: 20px; }
+.page { padding: 36px 40px 60px; max-width: 1180px; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 28px; flex-wrap: wrap; }
+.page-head h1 { font-size: 40px; letter-spacing: -.035em; font-weight: 800; line-height: 1.1; }
+.page-head p { color: var(--muted); margin-top: 6px; }
+
+/* ---------- Cards ---------- */
+.grid { display: grid; gap: 20px; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g2 { grid-template-columns: 2fr 1fr; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+.pad { padding: 22px; }
+.card-head { padding: 20px 22px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); }
+.card-head h2 { font-size: 17px; letter-spacing: -.01em; }
+.card-head p { color: var(--muted); font-size: 13px; }
+.stat { display: flex; gap: 16px; align-items: center; padding: 22px; }
+.ico { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--soft); color: var(--primary); flex: none; }
+.ico.coral { background: var(--accent-soft); color: #e2552f; }
+.ico.teal { background: #dcf5f1; color: #0b8a7b; }
+.ico.blue { background: #e3ecfd; color: #3b68c9; }
+.stat small { color: var(--muted); }
+.stat strong { display: block; font-size: 28px; letter-spacing: -.03em; line-height: 1.2; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--bg); color: var(--muted); font-size: 12px; font-weight: 600; }
+.pill.good { background: #dcf5f1; color: #0b8a7b; }
+.pill.warn { background: var(--accent-soft); color: #c2410c; }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 12px 22px; background: var(--bg); }
+td { padding: 14px 22px; border-top: 1px solid var(--line); font-size: 14px; }
+th.r, td.r { text-align: right; }
+td.amt { font-weight: 700; }
+.row-ico { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
+.row-ico .ico { width: 32px; height: 32px; border-radius: 10px; }
+.row-ico .ico svg { width: 16px; height: 16px; }
+.icon-btn { background: none; border: 0; padding: 6px; border-radius: 8px; color: var(--muted); }
+.icon-btn:hover { background: var(--accent-soft); color: #c2410c; }
+.empty { padding: 36px 22px; text-align: center; color: var(--muted); }
+.table-wrap { overflow-x: auto; }
+
+.banner { margin-top: 20px; background: linear-gradient(100deg, var(--primary), #6a49c8); color: #fff; border-radius: var(--radius); padding: 22px 26px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.banner b { font-size: 17px; display: block; }
+.banner span { opacity: .85; font-size: 14px; }
+.banner .btn { background: #fff; color: var(--primary); }
+.hero-card { background: linear-gradient(120deg, #2a1768, var(--primary)); color: #fff; border-radius: 22px; padding: 32px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; box-shadow: var(--shadow); }
+.hero-card small { opacity: .8; }
+.hero-card strong { display: block; font-size: 52px; letter-spacing: -.04em; line-height: 1.1; margin: 6px 0; }
+.hero-card .box { background: rgba(255,255,255,.14); border-radius: 16px; padding: 22px 30px; text-align: center; min-width: 210px; }
+.hero-card .box strong { font-size: 26px; }
+
+.donut { position: relative; width: 180px; height: 180px; margin: 0 auto; flex: none; }
+.donut svg { width: 100%; height: 100%; }
+.donut-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.donut-c strong { font-size: 28px; letter-spacing: -.03em; line-height: 1.1; }
+.donut-c span { font-size: 12px; color: var(--muted); }
+.legend { display: grid; gap: 10px; font-size: 14px; }
+.legend div { display: flex; align-items: center; gap: 10px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.legend em { margin-left: auto; padding-left: 24px; font-style: normal; font-weight: 700; }
+.legend small { color: var(--muted); width: 34px; text-align: right; }
+.center-col { display: grid; gap: 18px; justify-items: center; padding: 24px; }
+
+.goal { padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.goal header { display: flex; gap: 14px; align-items: center; }
+.goal h3 { font-size: 17px; }
+.goal small { color: var(--muted); }
+.bar { height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 99px; background: var(--c); transition: width .5s ease; }
+.goal-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+.seg { display: inline-flex; background: var(--soft); border-radius: 12px; padding: 4px; }
+.seg button { border: 0; background: none; padding: 8px 16px; border-radius: 9px; font-weight: 700; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.split { display: flex; align-items: center; gap: 36px; justify-content: center; padding: 28px; flex-wrap: wrap; }
+.big-card { padding: 26px; background: var(--accent-soft); border-color: #ffd5c8; box-shadow: none; }
+.big-card h2 { font-size: 28px; letter-spacing: -.03em; margin: 8px 0 4px; }
+.profile-card { max-width: 760px; }
+.who { display: flex; gap: 16px; align-items: center; padding-bottom: 22px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
+.who small { color: var(--muted); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+.two-col { display: grid; grid-template-columns: 400px 1fr; gap: 20px; align-items: start; }
+
+/* ---------- Modal & toast ---------- */
+.overlay { position: fixed; inset: 0; background: rgba(27,22,51,.45); display: grid; place-items: center; padding: 20px; z-index: 50; animation: fade .15s ease; }
+.modal { background: #fff; border-radius: 20px; padding: 28px; width: 100%; max-width: 440px; box-shadow: 0 30px 60px -20px rgba(27,22,51,.5); }
+.modal h2 { font-size: 22px; letter-spacing: -.02em; margin-bottom: 18px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+#toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 12px; font-weight: 600; opacity: 0; pointer-events: none; transition: all .25s; z-index: 60; }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+@keyframes fade { from { opacity: 0; } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 980px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth-hero { min-height: 300px; padding: 32px; }
+  .g3 { grid-template-columns: 1fr; }
+  .g2, .two-col { grid-template-columns: 1fr; }
+  .shell { grid-template-columns: 1fr; padding-bottom: 72px; }
+  .side { position: fixed; bottom: 0; left: 0; right: 0; top: auto; height: auto; padding: 6px; flex-direction: row; border-right: 0; border-top: 1px solid var(--line); z-index: 40; }
+  .side .brand, .side-foot { display: none; }
+  .nav { flex-direction: row; width: 100%; justify-content: space-around; }
+  .nav a { flex-direction: column; gap: 2px; font-size: 11px; padding: 8px 6px; }
+  .topbar, .page { padding-left: 20px; padding-right: 20px; }
+  .page-head h1 { font-size: 32px; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script>
+/* BudgetBuddy – vanilla JS, no build step. Data is saved in the browser (localStorage). */
+(() => {
+  'use strict';
+
+  /* ---------- Helpers ---------- */
+  const KEY = 'budgetbuddy:v2';
+  const CATS = ['Food', 'Transportation', 'School Supplies', 'Entertainment', 'Other'];
+  const CAT_COLOR = { 'School Supplies': 'var(--c1)', Food: 'var(--c2)', Transportation: 'var(--c3)', Entertainment: 'var(--c4)', Other: 'var(--c5)' };
+  const CAT_ICON = { Food: 'receipt', Transportation: 'arrow', 'School Supplies': 'wallet', Entertainment: 'sparkle', Other: 'receipt' };
+  const GOAL_COLORS = ['var(--c1)', 'var(--c2)', 'var(--c5)', 'var(--c3)', 'var(--c4)'];
+
+  const ICONS = {
+    home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+    wallet: '<path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7l12-4v4"/><circle cx="16.5" cy="13.5" r="1"/>',
+    receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    sparkle: '<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    bars: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  };
+  const icon = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const peso = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const pad = n => String(n).padStart(2, '0');
+  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const todayISO = () => toISO(new Date());
+  const parse = iso => new Date(iso + 'T00:00:00');
+  const fmtDate = iso => parse(iso).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+  const monthName = d => d.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+  const uid = () => Math.random().toString(36).slice(2, 10);
+  const initials = n => n.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'BB';
+  const $ = (s, el = document) => el.querySelector(s);
+
+  /* ---------- State ---------- */
+  function seed() {
+    const now = new Date();
+    const ago = n => { const d = new Date(); d.setDate(d.getDate() - n); return toISO(d); };
+    const firstOf = off => toISO(new Date(now.getFullYear(), now.getMonth() + off, 1));
+    return {
+      allowances: [
+        { id: uid(), date: firstOf(0), amount: 5000, note: 'Monthly allowance' },
+        { id: uid(), date: firstOf(-1), amount: 2500, note: 'Monthly allowance' },
+        { id: uid(), date: firstOf(-2), amount: 2500, note: 'Monthly allowance' },
+      ],
+      expenses: [
+        { id: uid(), date: ago(0), desc: 'Lunch', cat: 'Food', amount: 120 },
+        { id: uid(), date: ago(1), desc: 'Jeepney fare', cat: 'Transportation', amount: 40 },
+        { id: uid(), date: ago(2), desc: 'Snacks', cat: 'Food', amount: 60 },
+        { id: uid(), date: ago(3), desc: 'Notebook', cat: 'School Supplies', amount: 250 },
+        { id: uid(), date: ago(4), desc: 'Printing', cat: 'School Supplies', amount: 80 },
+        { id: uid(), date: ago(5), desc: 'Project materials', cat: 'School Supplies', amount: 1800 },
+      ],
+      goals: [
+        { id: uid(), name: 'New laptop', target: 10000, saved: 2000, due: toISO(new Date(now.getFullYear() + 1, 0, 31)) },
+        { id: uid(), name: 'School supplies', target: 5000, saved: 2000, due: toISO(new Date(now.getFullYear() + 1, 5, 15)) },
+        { id: uid(), name: 'Travel fund', target: 15000, saved: 1500, due: toISO(new Date(now.getFullYear() + 1, 2, 30)) },
+      ],
+    };
+  }
+  const empty = () => ({ allowances: [], expenses: [], goals: [] });
+
+  let db = loadDB();
+  const state = { session: false, user: null, data: empty(), range: 'monthly', authMode: 'login' };
+  function loadDB() {
+    const fresh = { users: {}, session: null, locks: {} };
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY));
+      if (!saved || typeof saved !== 'object' || !saved.users || typeof saved.users !== 'object') return fresh;
+      saved.locks = saved.locks && typeof saved.locks === 'object' ? saved.locks : {};
+      Object.entries(saved.users).forEach(([email, user]) => {
+        if (!user || typeof user !== 'object') { delete saved.users[email]; return; }
+        user.email = user.email || email;
+        user.name = typeof user.name === 'string' && user.name.trim() ? user.name : 'BudgetBuddy User';
+        user.data = user.data && typeof user.data === 'object' ? user.data : empty();
+        user.data.allowances = Array.isArray(user.data.allowances) ? user.data.allowances : [];
+        user.data.expenses = Array.isArray(user.data.expenses) ? user.data.expenses : [];
+        user.data.goals = Array.isArray(user.data.goals) ? user.data.goals : [];
+      });
+      return saved;
+    } catch (e) { return fresh; }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(db)); }
+    catch (e) { toast('Could not save changes. Check your browser storage settings.'); }
+  }
+  function startSession(email) {
+    const u = db.users[email];
+    if (!u) return;
+    u.data = u.data && typeof u.data === 'object' ? u.data : empty();
+    u.data.allowances = Array.isArray(u.data.allowances) ? u.data.allowances : [];
+    u.data.expenses = Array.isArray(u.data.expenses) ? u.data.expenses : [];
+    u.data.goals = Array.isArray(u.data.goals) ? u.data.goals : [];
+    state.user = u; state.data = u.data; state.session = true; state.authMode = 'login'; db.session = email; save();
+  }
+  if (db.session && db.users[db.session]) startSession(db.session);
+
+  /* ---------- Passwords: salted PBKDF2 hash, never stored as plain text ---------- */
+  const enc = new TextEncoder();
+  const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const newSalt = () => (window.crypto && crypto.getRandomValues) ? b64(crypto.getRandomValues(new Uint8Array(16))) : uid() + uid();
+  async function hashPw(pw, salt) {
+    if (window.crypto && crypto.subtle) {
+      const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+      const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 150000, hash: 'SHA-256' }, key, 256);
+      return 'p1:' + b64(bits);
+    }
+    let x = 5381; const s = salt + pw;
+    for (let i = 0; i < s.length; i++) x = ((x << 5) + x) ^ s.charCodeAt(i);
+    return 'f1:' + (x >>> 0).toString(16);
+  }
+  const strongPw = pw => pw.length >= 8 && /[A-Za-z]/.test(pw) && /\d/.test(pw);
+
+  /* ---------- Calculations ---------- */
+  const inMonth = (iso, d = new Date()) => { const x = parse(iso); return x.getFullYear() === d.getFullYear() && x.getMonth() === d.getMonth(); };
+  const sum = list => list.reduce((a, x) => a + Number(x.amount), 0);
+  const byDateDesc = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  function totals() {
+    const allowance = sum(state.data.allowances.filter(a => inMonth(a.date)));
+    const spent = sum(state.data.expenses.filter(e => inMonth(e.date)));
+    return { allowance, spent, remaining: allowance - spent, pct: allowance > 0 ? Math.min(100, Math.round((spent / allowance) * 100)) : 0 };
+  }
+
+  /* ---------- UI helpers ---------- */
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+  function donut(parts, centerText, sub) {
+    const R = 70, C = 2 * Math.PI * R, total = parts.reduce((a, p) => a + p.v, 0);
+    let off = 0;
+    const arcs = parts.filter(p => p.v > 0).map(p => {
+      const len = (p.v / total) * C;
+      const s = `<circle cx="90" cy="90" r="${R}" fill="none" stroke="${p.c}" stroke-width="22" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}"/>`;
+      off += len; return s;
+    }).join('');
+    return `<div class="donut"><svg viewBox="0 0 180 180" role="img" aria-label="${esc(centerText)} ${esc(sub)}"><g transform="rotate(-90 90 90)"><circle cx="90" cy="90" r="${R}" fill="none" stroke="#ece6fa" stroke-width="22"/>${arcs}</g></svg><div class="donut-c"><strong>${centerText}</strong><span>${sub}</span></div></div>`;
+  }
+  function openModal(title, body, onSubmit, submitLabel = 'Save') {
+    const el = document.createElement('div');
+    el.className = 'overlay';
+    el.innerHTML = `<form class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h2>${esc(title)}</h2>${body}<div class="modal-actions"><button type="button" class="btn ghost" data-close>Cancel</button><button class="btn">${esc(submitLabel)}</button></div></form>`;
+    const close = () => el.remove();
+    el.addEventListener('click', e => { if (e.target === el || e.target.hasAttribute('data-close')) close(); });
+    el.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    el.querySelector('form').addEventListener('submit', e => {
+      e.preventDefault();
+      if (onSubmit(Object.fromEntries(new FormData(e.target)), close) === false) return;
+      close();
+    });
+    document.body.appendChild(el);
+    const first = el.querySelector('input,select'); if (first) first.focus();
+  }
+  const field = (label, name, attrs = '', ic = '') => `<label class="field"><span>${label}</span><div class="control">${ic ? icon(ic) : ''}<input name="${name}" ${attrs}></div></label>`;
+  const catOptions = sel => CATS.map(c => `<option${c === sel ? ' selected' : ''}>${c}</option>`).join('');
+
+  /* ---------- Views ---------- */
+  function authView(mode = 'login') {
+    const login = mode === 'login';
+    return `<main class="auth">
+      <section class="auth-hero">
+        <div class="brand"><div class="brand-mark">${icon('wallet')}</div><div><b>BudgetBuddy</b><small>Money made simple.</small></div></div>
+        <div>
+          <h1>Spend wisely.<span>Dream bigger.</span></h1>
+          <p>Keep your allowance, daily spending, and savings goals in one calm, easy place.</p>
+          <div class="chips"><span class="chip">${icon('bars')} Simple insights</span><span class="chip">${icon('target')} Smarter goals</span></div>
+        </div>
+        <small style="opacity:.7;position:relative;z-index:1">Built to help students feel confident with money.</small>
+      </section>
+      <section class="auth-panel"><div class="auth-card">
+        <h2>${login ? 'Welcome back' : 'Create your account'}</h2>
+        <p>${login ? 'Enter your details to continue to your wallet.' : 'Start building better money habits today.'}</p>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="${login}" data-auth="login">Log in</button>
+          <button class="tab" role="tab" aria-selected="${!login}" data-auth="register">Register</button>
+        </div>
+        <form id="auth-form" data-mode="${mode}" novalidate>
+          ${login ? '' : field('Full name', 'name', 'placeholder="Juan Dela Cruz" autocomplete="name"', 'user')}
+          ${field('Email address', 'email', `type="email" placeholder="juan@example.com" autocomplete="username" value="${esc(state.authEmail || '')}"`, 'mail')}
+          ${field('Password', 'password', `type="password" placeholder="${login ? 'Your password' : 'At least 8 characters, letters and numbers'}" autocomplete="${login ? 'current-password' : 'new-password'}"`, 'lock')}
+          ${login ? '' : `<p class="hint" id="pw-hint"><span data-r="len">8+ characters</span><span data-r="let">a letter</span><span data-r="num">a number</span></p>`}
+          ${login ? '' : field('Confirm password', 'confirm', 'type="password" placeholder="Type it again" autocomplete="new-password"', 'lock')}
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><label style="display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)"><input type="checkbox" data-showpw> Show password</label>${login ? '<button type="button" class="link" data-action="forgot" style="font-size:13px">Forgot password?</button>' : ''}</div>
+          <p class="error" id="auth-error" role="alert"></p>
+          <button class="btn block" id="auth-submit" data-label="${login ? 'Log in' : 'Create account'}"><span>${login ? 'Log in' : 'Create account'}</span> ${icon('arrow')}</button>
+        </form>
+        <p class="note">${icon('lock')} ${login ? 'No account yet? Tap Register to create one.' : 'Accounts are saved on this device and browser only. Passwords are hashed, never stored as plain text.'}</p>
+      </div></section>
+    </main>`;
+  }
+
+  const NAV = [['dashboard', 'Dashboard', 'home'], ['allowance', 'Allowance', 'wallet'], ['expenses', 'Expenses', 'receipt'], ['goals', 'Goals', 'target'], ['reports', 'Reports', 'chart'], ['profile', 'Profile', 'user']];
+  function shell(route, content) {
+    const h = new Date().getHours();
+    const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    const u = state.user;
+    return `<div class="shell">
+      <aside class="side">
+        <div class="brand"><div class="brand-mark">${icon('wallet')}</div><b>BudgetBuddy</b></div>
+        <nav class="nav" aria-label="Main">${NAV.map(([r, l, i]) => `<a href="#/${r}" ${r === route ? 'aria-current="page"' : ''}>${icon(i)}<span>${l}</span></a>`).join('')}</nav>
+        <div class="side-foot">
+          <div class="tip"><b>${icon('sparkle')} Money tip</b>Save a little before you spend.</div>
+          <button class="logout" data-action="logout">${icon('logout')} Log out</button>
+        </div>
+      </aside>
+      <div class="main">
+        <header class="topbar"><div><small>${greet},</small><b>${esc(u.name)}</b></div><div class="me"><span class="avatar">${esc(initials(u.name))}</span>${esc(u.name)}</div></header>
+        <div class="page">${content}</div>
+      </div>
+    </div>`;
+  }
+  const head = (title, sub, action = '') => `<div class="page-head"><div><h1>${title}</h1><p>${sub}</p></div>${action}</div>`;
+  const addBtn = (a, label) => `<button class="btn" data-action="${a}">${icon('plus')} ${label}</button>`;
+  const expRow = (e, del = false) => `<tr><td>${fmtDate(e.date)}</td><td><span class="row-ico"><span class="ico">${icon(CAT_ICON[e.cat] || 'receipt')}</span>${esc(e.desc)}</span></td><td><span class="pill">${esc(e.cat)}</span></td><td class="r amt">${peso(e.amount)}</td>${del ? `<td class="r"><button class="icon-btn" data-del-expense="${e.id}" aria-label="Delete ${esc(e.desc)}">${icon('trash')}</button></td>` : ''}</tr>`;
+  const expTable = (list, del = false) => list.length
+    ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="r">Amount</th>${del ? '<th></th>' : ''}</tr></thead><tbody>${list.map(e => expRow(e, del)).join('')}</tbody></table></div>`
+    : `<div class="empty">No expenses yet. Add your first one to start tracking.</div>`;
+
+  const views = {
+    dashboard() {
+      const t = totals(), recent = [...state.data.expenses].sort(byDateDesc).slice(0, 4);
+      const status = t.allowance === 0 ? ['Set up', ''] : t.pct <= 75 ? ['On track', 'good'] : ['Watch spending', 'warn'];
+      return shell('dashboard', `
+        ${head('Your money, at a glance', "Here's how your budget is looking this month.", addBtn('add-expense', 'Add expense'))}
+        <div class="grid g3">
+          <div class="card stat"><span class="ico">${icon('wallet')}</span><div><small>Total allowance</small><strong>${peso(t.allowance)}</strong></div></div>
+          <div class="card stat"><span class="ico coral">${icon('receipt')}</span><div><small>Total expenses</small><strong>${peso(t.spent)}</strong></div></div>
+          <div class="card stat"><span class="ico teal">${icon('target')}</span><div><small>Remaining balance</small><strong>${peso(t.remaining)}</strong></div></div>
+        </div>
+        <div class="grid g2" style="margin-top:20px">
+          <div class="card"><div class="card-head"><div><h2>Recent expenses</h2><p>Your latest transactions</p></div><a class="link" href="#/expenses">View all</a></div>${expTable(recent)}</div>
+          <div class="card"><div class="card-head"><div><h2>Monthly budget</h2><p>${monthName(new Date())}</p></div><span class="pill ${status[1]}">${status[0]}</span></div>
+            <div class="center-col">${donut([{ v: t.spent, c: 'var(--primary)' }, { v: Math.max(0, t.remaining), c: 'var(--soft)' }], t.pct + '%', 'spent')}
+            <div class="legend" style="width:100%"><div><i style="background:var(--primary)"></i>Spent<em>${peso(t.spent)}</em></div><div><i style="background:#cfc3f0"></i>Remaining<em>${peso(t.remaining)}</em></div></div></div></div>
+        </div>
+        <div class="banner"><div><b>Small wins add up</b><span>${t.allowance ? `You've kept ${100 - t.pct}% of your allowance. That's a strong start toward your savings goals.` : 'Add your allowance to see how much you keep each month.'}</span></div><a class="btn" href="#/goals">View goals</a></div>`);
+    },
+    allowance() {
+      const t = totals(), list = [...state.data.allowances].sort(byDateDesc);
+      return shell('allowance', `
+        ${head('Allowance', 'Track the money you receive each month.', addBtn('add-allowance', 'Add allowance'))}
+        <div class="hero-card"><div><small>Current allowance</small><strong>${peso(t.allowance)}</strong><small>For ${monthName(new Date())}</small></div><div class="box"><small>Available balance</small><strong>${peso(t.remaining)}</strong></div></div>
+        <div class="card" style="margin-top:20px"><div class="card-head"><div><h2>Allowance history</h2><p>Your recent deposits</p></div></div>
+          ${list.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Amount</th><th>Notes</th><th></th></tr></thead><tbody>${list.map(a => `<tr><td>${fmtDate(a.date)}</td><td class="amt">${peso(a.amount)}</td><td>${esc(a.note)}</td><td class="r"><button class="icon-btn" data-del-allowance="${a.id}" aria-label="Delete deposit">${icon('trash')}</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">No deposits yet. Add your allowance to get started.</div>'}</div>`);
+    },
+    expenses() {
+      const list = [...state.data.expenses].sort(byDateDesc);
+      return shell('expenses', `
+        ${head('Add an expense', 'Log a purchase and keep your budget accurate.')}
+        <div class="two-col">
+          <form class="card pad" id="expense-form"><h2 style="margin-bottom:18px;font-size:18px">Expense details</h2>
+            ${field('Description', 'desc', 'placeholder="e.g. Lunch, bus fare" required maxlength="60"')}
+            <label class="field"><span>Category</span><div class="control"><select name="cat">${catOptions('Food')}</select></div></label>
+            ${field('Amount', 'amount', 'type="number" min="0.01" step="0.01" placeholder="0.00" required', '').replace('<div class="control">', '<div class="control"><b style="color:var(--ink)">₱</b>')}
+            ${field('Date', 'date', `type="date" value="${todayISO()}" required`)}
+            <button class="btn block">Save expense</button></form>
+          <div class="card"><div class="card-head"><div><h2>Recent expenses</h2><p>${list.length} transaction${list.length === 1 ? '' : 's'} recorded</p></div></div>${expTable(list.slice(0, 12), true)}</div>
+        </div>`);
+    },
+    goals() {
+      const g = state.data.goals, saved = sum(g.map(x => ({ amount: x.saved })));
+      const card = (x, i) => { const p = Math.min(100, Math.round((x.saved / x.target) * 100)); const c = GOAL_COLORS[i % GOAL_COLORS.length];
+        return `<div class="card goal" style="--c:${c}"><header><span class="ico" style="color:${c}">${icon('target')}</span><div><small>Target: ${fmtDate(x.due)}</small><h3>${esc(x.name)}</h3></div></header>
+        <small>${peso(x.saved)} of ${peso(x.target)}</small><div class="bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div><small>${p}% complete</small>
+        <div class="goal-actions"><button class="btn ghost sm" data-contribute="${x.id}">Add savings</button><button class="btn danger sm" data-del-goal="${x.id}" aria-label="Delete ${esc(x.name)}">${icon('trash')}</button></div></div>`; };
+      return shell('goals', `
+        ${head('Your goals', 'Turn your plans into progress, one peso at a time.', addBtn('add-goal', 'Add goal'))}
+        ${g.length ? `<div class="grid g3">${g.map(card).join('')}</div><div class="card pad" style="margin-top:20px"><b>Keep the momentum going</b><p style="color:var(--muted)">You've saved ${peso(saved)} across ${g.length} goal${g.length === 1 ? '' : 's'}. Consistency matters more than the amount.</p></div>` : '<div class="card empty">No goals yet. Add one to start saving with a purpose.</div>'}`);
+    },
+    reports() {
+      const range = state.range || 'monthly', now = new Date();
+      let list = state.data.expenses, label = '';
+      if (range === 'weekly') { const from = new Date(); from.setDate(from.getDate() - 6); const f = toISO(from); list = list.filter(e => e.date >= f && e.date <= todayISO()); label = 'Last 7 days'; }
+      else if (range === 'monthly') { list = list.filter(e => inMonth(e.date)); label = monthName(now); }
+      else { list = list.filter(e => parse(e.date).getFullYear() === now.getFullYear()); label = String(now.getFullYear()); }
+      const total = sum(list), by = CATS.map(c => ({ c, v: sum(list.filter(e => e.cat === c)) })).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+      const t = totals();
+      const insight = t.remaining > 0 ? `Your remaining balance is healthy. Try moving ${peso(Math.max(50, Math.round(t.remaining * 0.1 / 50) * 50))} toward a savings goal.` : t.allowance ? 'You have used your whole allowance this month. Hold off on extras until the next deposit.' : 'Add your allowance to get personalised tips.';
+      return shell('reports', `
+        ${head('Spending reports', 'Understand where your money goes.', `<div class="seg" role="group" aria-label="Report period">${['weekly', 'monthly', 'yearly'].map(r => `<button data-range="${r}" aria-pressed="${r === range}">${r[0].toUpperCase() + r.slice(1)}</button>`).join('')}</div>`)}
+        <div class="grid g2">
+          <div class="card"><div class="card-head"><div><h2>Expenses by category</h2><p>${label}</p></div></div>
+            ${total ? `<div class="split">${donut(by.map(x => ({ v: x.v, c: CAT_COLOR[x.c] })), peso(total), 'Total spent')}<div class="legend">${by.map(x => `<div><i style="background:${CAT_COLOR[x.c]}"></i>${x.c}<em>${peso(x.v)}</em><small>${Math.round(x.v / total * 100)}%</small></div>`).join('')}</div></div>` : '<div class="empty">No spending in this period.</div>'}</div>
+          <div style="display:grid;gap:20px;align-content:start">
+            <div class="card big-card"><small style="color:#c2410c;font-weight:700">Highest spend</small><h2>${by[0] ? by[0].c : '—'}</h2><p style="color:var(--muted)">${by[0] ? peso(by[0].v) + ' this period' : 'Nothing recorded yet'}</p></div>
+            <div class="card pad"><b style="display:flex;gap:8px;align-items:center">${icon('sparkle')} A helpful insight</b><p style="color:var(--muted);margin-top:6px">${insight}</p></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:20px"><div class="card-head"><div><h2>All expenses</h2><p>${label}</p></div></div>${expTable([...list].sort(byDateDesc))}</div>`);
+    },
+    profile() {
+      const u = state.user;
+      return shell('profile', `
+        ${head('Your profile', 'Manage your personal details and preferences.')}
+        <form class="card pad profile-card" id="profile-form">
+          <div class="who"><span class="avatar lg">${esc(initials(u.name))}</span><div><b style="font-size:18px">${esc(u.name)}</b><br><small>Student saver since ${esc(u.since)}</small></div></div>
+          <div class="form-grid">${field('Full name', 'name', `value="${esc(u.name)}" required`)}${field('Email address', 'email', `type="email" value="${esc(u.email)}" readonly`)}
+          ${field('Monthly allowance goal', 'goal', `type="number" min="0" step="50" value="${u.goal || 0}"`).replace('<div class="control">', '<div class="control"><b style="color:var(--ink)">₱</b>')}</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn">Save changes</button><button type="button" class="btn ghost" data-action="reset">Load sample data</button></div>
+        </form>
+        <form class="card pad profile-card" id="pw-form" style="margin-top:20px"><h2 style="margin-bottom:18px;font-size:18px">Change password</h2>
+          <div class="form-grid">${field('Current password', 'current', 'type="password" required autocomplete="current-password"', 'lock')}${field('New password', 'next', 'type="password" required autocomplete="new-password" placeholder="8+ characters, letters and numbers"', 'lock')}</div>
+          <p class="error" id="pw-error" role="alert"></p><button class="btn">Update password</button></form>`);
+    },
+  };
+
+  /* ---------- Render & routing ---------- */
+  function route() { const r = (location.hash.replace('#/', '') || 'dashboard'); return views[r] ? r : 'dashboard'; }
+  function render() {
+    const app = $('#app');
+    if (!state.session || !state.user) {
+      app.innerHTML = authView(state.authMode || 'login');
+      const first = $('#auth-form input[name=name]') || ($('#auth-form input[name=email]').value ? $('#auth-form input[name=password]') : $('#auth-form input[name=email]'));
+      if (first) first.focus();
+      return;
+    }
+    app.innerHTML = views[route()]();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', render);
+
+  /* ---------- Events ---------- */
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button, a'); if (!t) return;
+    const d = t.dataset;
+    if (d.auth) { const af = $('#auth-form'); if (af) state.authEmail = (new FormData(af).get('email') || '').trim(); state.authMode = d.auth; render(); return; }
+    if (d.range) { state.range = d.range; render(); return; }
+    if (d.delExpense) { state.data.expenses = state.data.expenses.filter(x => x.id !== d.delExpense); save(); render(); toast('Expense deleted'); return; }
+    if (d.delAllowance) { state.data.allowances = state.data.allowances.filter(x => x.id !== d.delAllowance); save(); render(); toast('Deposit deleted'); return; }
+    if (d.delGoal) { state.data.goals = state.data.goals.filter(x => x.id !== d.delGoal); save(); render(); toast('Goal deleted'); return; }
+    if (d.contribute) {
+      const g = state.data.goals.find(x => x.id === d.contribute);
+      openModal(`Add savings to ${g.name}`, field('Amount', 'amount', 'type="number" min="1" step="0.01" required placeholder="0.00"'), v => {
+        g.saved = Math.min(g.target, g.saved + Number(v.amount)); save(); render(); toast('Savings added');
+      }, 'Add savings'); return;
+    }
+    switch (d.action) {
+      case 'forgot':
+        openModal('Forgot your password?', `<p style="color:var(--muted);margin:-8px 0 16px">BudgetBuddy keeps accounts on this device only, so it can't email you a reset link. You can remove the account here and register again. This deletes its saved expenses, allowance and goals.</p>` + field('Account email', 'email', `type="email" required value="${esc(($('#auth-form input[name=email]') || {}).value || '')}"`) + field('Type DELETE to confirm', 'confirm', 'required autocomplete="off"'), (v, close) => {
+          const em = v.email.trim().toLowerCase();
+          if (!db.users[em]) { toast('No account found for that email'); return false; }
+          if (v.confirm.trim() !== 'DELETE') { toast('Type DELETE in capital letters'); return false; }
+          delete db.users[em]; if (db.locks) delete db.locks[em]; save(); state.authMode = 'register'; state.authEmail = em; render(); toast('Account removed. Register again with a new password.');
+        }, 'Remove account'); break;
+      case 'logout': state.session = false; state.user = null; db.session = null; save(); render(); break;
+      case 'reset': state.data = state.user.data = seed(); save(); render(); toast('Sample data loaded'); break;
+      case 'add-expense':
+        openModal('Add expense', field('Description', 'desc', 'required maxlength="60" placeholder="e.g. Lunch, bus fare"') + `<label class="field"><span>Category</span><div class="control"><select name="cat">${catOptions('Food')}</select></div></label>` + field('Amount (₱)', 'amount', 'type="number" min="0.01" step="0.01" required placeholder="0.00"') + field('Date', 'date', `type="date" required value="${todayISO()}"`), v => {
+          state.data.expenses.push({ id: uid(), date: v.date, desc: v.desc.trim(), cat: v.cat, amount: Number(v.amount) }); save(); render(); toast('Expense saved');
+        }, 'Save expense'); break;
+      case 'add-allowance':
+        openModal('Add allowance', field('Amount', 'amount', 'type="number" min="1" step="0.01" required placeholder="0.00"') + field('Date', 'date', `type="date" required value="${todayISO()}"`) + field('Notes', 'note', 'placeholder="Monthly allowance" maxlength="60"'), v => {
+          state.data.allowances.push({ id: uid(), date: v.date, amount: Number(v.amount), note: v.note || 'Allowance' }); save(); render(); toast('Allowance added');
+        }); break;
+      case 'add-goal':
+        openModal('Add goal', field('Goal name', 'name', 'required maxlength="40" placeholder="e.g. New phone"') + field('Target amount', 'target', 'type="number" min="1" step="0.01" required') + field('Already saved', 'saved', 'type="number" min="0" step="0.01" value="0"') + field('Target date', 'due', `type="date" required value="${toISO(new Date(new Date().getFullYear() + 1, 0, 1))}"`), v => {
+          state.data.goals.push({ id: uid(), name: v.name, target: Number(v.target), saved: Math.min(Number(v.saved || 0), Number(v.target)), due: v.due }); save(); render(); toast('Goal added');
+        }, 'Add goal'); break;
+    }
+  });
+
+  async function handleAuth(f) {
+    const v = Object.fromEntries(new FormData(f)), err = $('#auth-error'), reg = f.dataset.mode === 'register';
+    const btn = $('#auth-submit'), label = btn.querySelector('span');
+    const email = (v.email || '').trim().toLowerCase(), pw = v.password || '';
+    f.querySelectorAll('.control.bad').forEach(c => c.classList.remove('bad'));
+    err.textContent = '';
+    const fail = (m, name) => {
+      err.textContent = m; btn.disabled = false; label.textContent = btn.dataset.label;
+      const el = name && f.querySelector(`[name=${name}]`); if (el) { el.closest('.control').classList.add('bad'); el.focus(); }
+    };
+    if (reg && !(v.name || '').trim()) return fail('Enter your full name.', 'name');
+    if (!email) return fail('Enter your email address.', 'email');
+    if (!/^\S+@\S+\.\S+$/.test(email)) return fail('That email looks incomplete. Try something like juan@example.com.', 'email');
+    if (!pw) return fail('Enter your password.', 'password');
+    btn.disabled = true; label.textContent = reg ? 'Creating account…' : 'Logging in…';
+    if (reg) {
+      if (!strongPw(pw)) return fail('Your password needs at least 8 characters, with a letter and a number.', 'password');
+      if (pw !== v.confirm) return fail('The two passwords do not match.', 'confirm');
+      if (db.users[email]) return fail('That email already has an account. Tap Log in instead.', 'email');
+      const salt = newSalt();
+      db.users[email] = { name: v.name.trim(), email, goal: 0, since: new Date().toLocaleDateString('en-PH', { month: 'long', year: 'numeric' }), salt, hash: await hashPw(pw, salt), data: empty() };
+      startSession(email); state.authEmail = '';
+      toast('Account created. Welcome, ' + v.name.trim().split(' ')[0] + '!');
+    } else {
+      db.locks = db.locks || {};
+      const lock = db.locks[email];
+      if (lock && lock.until > Date.now()) return fail(`Too many tries. Wait ${Math.ceil((lock.until - Date.now()) / 1000)} seconds and try again.`);
+      const u = db.users[email];
+      if (!u) return fail('No account found for that email on this device. Tap Register to create one.', 'email');
+      if ((await hashPw(pw, u.salt)) !== u.hash) {
+        const l = db.locks[email] = db.locks[email] || { n: 0, until: 0 };
+        l.n++; const left = 5 - l.n;
+        if (l.n >= 5) { l.until = Date.now() + 30000; l.n = 0; }
+        save(); return fail(left > 0 ? `Wrong password. ${left} ${left === 1 ? 'try' : 'tries'} left.` : 'Too many wrong tries. Wait 30 seconds.', 'password');
+      }
+      delete db.locks[email];
+      startSession(email); state.authEmail = '';
+      toast('Welcome back, ' + u.name.split(' ')[0] + '!');
+    }
+    location.hash = '#/dashboard'; render();
+  }
+  async function changePassword(f) {
+    const v = Object.fromEntries(new FormData(f)), err = $('#pw-error'), u = state.user;
+    if ((await hashPw(v.current, u.salt)) !== u.hash) { err.textContent = 'Your current password is incorrect.'; return; }
+    if (!strongPw(v.next)) { err.textContent = 'Use at least 8 characters with a letter and a number.'; return; }
+    u.salt = newSalt(); u.hash = await hashPw(v.next, u.salt); save(); f.reset(); err.textContent = ''; toast('Password updated');
+  }
+  document.addEventListener('input', e => {
+    if (!e.target.matches('#auth-form[data-mode=register] input[name=password]')) return;
+    const pw = e.target.value, ok = { len: pw.length >= 8, let: /[A-Za-z]/.test(pw), num: /\d/.test(pw) };
+    document.querySelectorAll('#pw-hint span').forEach(s => s.classList.toggle('ok', ok[s.dataset.r]));
+  });
+  document.addEventListener('change', e => {
+    if (e.target.matches('[data-showpw]')) e.target.closest('form').querySelectorAll('input[name=password],input[name=confirm]').forEach(i => { i.type = e.target.checked ? 'text' : 'password'; });
+  });
+
+  document.addEventListener('submit', e => {
+    const f = e.target;
+    if (f.id === 'auth-form') {
+      e.preventDefault();
+      handleAuth(f).catch(err => {
+        const message = $('#auth-error');
+        const button = $('#auth-submit');
+        if (message) message.textContent = 'Something went wrong while signing in. Please try again.';
+        if (button) { button.disabled = false; const label = button.querySelector('span'); if (label) label.textContent = button.dataset.label; }
+        console.error('BudgetBuddy authentication error:', err);
+      });
+      return;
+    }
+    if (f.id === 'pw-form') {
+      e.preventDefault();
+      changePassword(f).catch(err => {
+        const message = $('#pw-error');
+        if (message) message.textContent = 'Could not update the password. Please try again.';
+        console.error('BudgetBuddy password update error:', err);
+      });
+      return;
+    }
+    if (f.id === 'expense-form') {
+      e.preventDefault(); const v = Object.fromEntries(new FormData(f));
+      state.data.expenses.push({ id: uid(), date: v.date, desc: v.desc.trim(), cat: v.cat, amount: Number(v.amount) });
+      save(); render(); toast('Expense saved'); return;
+    }
+    if (f.id === 'profile-form') {
+      e.preventDefault(); const v = Object.fromEntries(new FormData(f));
+      Object.assign(state.user, { name: v.name.trim(), goal: Number(v.goal || 0) }); save(); render(); toast('Profile saved');
+    }
+  });
+
+  render();
+})();
+
+</script>
+</body>
+</html>
